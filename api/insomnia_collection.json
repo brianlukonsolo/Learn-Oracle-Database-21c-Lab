@@ -1,0 +1,134 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_source": "oracle-listener-lab",
+  "__export_date": "2026-06-11T00:00:00.000Z",
+  "resources": [
+    {
+      "_id": "wrk_oracle_lab",
+      "_type": "workspace",
+      "name": "Oracle Listener Lab - HR REST (ORDS)",
+      "description": "REST APIs exposed by ORDS over the HR schema. Path: Insomnia -> ORDS (:8080) -> listener host (:1521) -> oracle-db (XEPDB1)."
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_oracle_lab",
+      "name": "Lab (localhost)",
+      "data": { "baseUrl": "http://localhost:8085/ords/hr" }
+    },
+    {
+      "_id": "fld_employees",
+      "_type": "request_group",
+      "parentId": "wrk_oracle_lab",
+      "name": "Employees",
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_emp_list",
+      "_type": "request",
+      "parentId": "fld_employees",
+      "name": "List employees",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/employees/",
+      "headers": [ { "name": "Accept", "value": "application/json" } ],
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_emp_one",
+      "_type": "request",
+      "parentId": "fld_employees",
+      "name": "Get employee 100",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/employees/100",
+      "headers": [ { "name": "Accept", "value": "application/json" } ],
+      "metaSortKey": -90
+    },
+    {
+      "_id": "req_emp_filter",
+      "_type": "request",
+      "parentId": "fld_employees",
+      "name": "Filter employees (dept 20)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/employees/",
+      "parameters": [ { "name": "q", "value": "{\"department_id\":20}" } ],
+      "headers": [ { "name": "Accept", "value": "application/json" } ],
+      "metaSortKey": -80
+    },
+    {
+      "_id": "req_emp_create",
+      "_type": "request",
+      "parentId": "fld_employees",
+      "name": "Create employee (POST)",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/employees/",
+      "headers": [ { "name": "Content-Type", "value": "application/json" } ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"employee_id\": 900,\n  \"first_name\": \"Ada\",\n  \"last_name\": \"Lovelace\",\n  \"email\": \"ALOVELACE\",\n  \"hire_date\": \"2024-01-15T00:00:00Z\",\n  \"job_id\": \"IT_PROG\",\n  \"salary\": 9500,\n  \"manager_id\": 101,\n  \"department_id\": 20\n}"
+      },
+      "metaSortKey": -70
+    },
+    {
+      "_id": "req_emp_update",
+      "_type": "request",
+      "parentId": "fld_employees",
+      "name": "Update employee 900 (PUT)",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/employees/900",
+      "headers": [ { "name": "Content-Type", "value": "application/json" } ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"employee_id\": 900,\n  \"first_name\": \"Ada\",\n  \"last_name\": \"Lovelace\",\n  \"email\": \"ALOVELACE\",\n  \"hire_date\": \"2024-01-15T00:00:00Z\",\n  \"job_id\": \"IT_PROG\",\n  \"salary\": 11000,\n  \"manager_id\": 101,\n  \"department_id\": 20\n}"
+      },
+      "metaSortKey": -60
+    },
+    {
+      "_id": "req_emp_delete",
+      "_type": "request",
+      "parentId": "fld_employees",
+      "name": "Delete employee 900",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/employees/900",
+      "headers": [],
+      "metaSortKey": -50
+    },
+    {
+      "_id": "fld_reference",
+      "_type": "request_group",
+      "parentId": "wrk_oracle_lab",
+      "name": "Reference & Reports",
+      "metaSortKey": -50
+    },
+    {
+      "_id": "req_departments",
+      "_type": "request",
+      "parentId": "fld_reference",
+      "name": "List departments",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/departments/",
+      "headers": [ { "name": "Accept", "value": "application/json" } ],
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_jobs",
+      "_type": "request",
+      "parentId": "fld_reference",
+      "name": "List jobs",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/jobs/",
+      "headers": [ { "name": "Accept", "value": "application/json" } ],
+      "metaSortKey": -90
+    },
+    {
+      "_id": "req_report_headcount",
+      "_type": "request",
+      "parentId": "fld_reference",
+      "name": "Report: headcount by department",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/reports/headcount",
+      "headers": [ { "name": "Accept", "value": "application/json" } ],
+      "metaSortKey": -80
+    }
+  ]
+}

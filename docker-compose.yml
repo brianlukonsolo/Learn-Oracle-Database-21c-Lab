@@ -1,0 +1,93 @@
+# =====================================================================
+#  Oracle Listener <-> Database Lab
+#  ---------------------------------------------------------------------
+#  Three containers, one private network, modelling a real shop:
+#
+#    +-----------+        +-------------------+        +-------------+
+#    |  ORDS     |        |  LISTENER HOST    |        |  ORACLE DB  |
+#    | (REST API)|  --->  |  tnslsnr :1521    |  --->  |  XE / XEPDB1|
+#    |  :8080    |        |  (no database)    |        |  (real DB)  |
+#    +-----------+        +-------------------+        +-------------+
+#         host:8080            host:1521                host:1522
+#
+#  The DB registers its services with the listener host over the network
+#  (remote registration). Clients talk to the listener host, which
+#  redirects them to the database instance -- just like your Solaris box.
+# =====================================================================
+name: oracle-listener-lab
+
+networks:
+  orclnet:
+    driver: bridge
+
+volumes:
+  oracle-data:
+
+services:
+  # -------------------------------------------------------------------
+  # The DATABASE instance. Lives on its own "host" (container).
+  # -------------------------------------------------------------------
+  oracle-db:
+    image: gvenzl/oracle-xe:21-slim-faststart
+    container_name: oracle-db
+    hostname: oracle-db
+    networks: [orclnet]
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:-oracle}   # SYS / SYSTEM password
+    ports:
+      - "1522:1521"          # DIRECT access to the DB (for desktop tools)
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./db/init:/container-entrypoint-initdb.d:ro      # runs ONCE
+      - ./db/startup:/container-entrypoint-startdb.d:ro   # runs each start
+    depends_on:
+      listener:
+        condition: service_started   # listener host must exist first so
+                                     # the DB can resolve & register with it
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 90s
+
+  # -------------------------------------------------------------------
+  # The LISTENER HOST. Runs ONLY a listener -- the "Solaris box".
+  # The deploy script is run from INSIDE this container.
+  # -------------------------------------------------------------------
+  listener:
+    build:
+      context: ./listener
+    image: oracle-listener-lab/listener:21
+    container_name: listener
+    hostname: listener
+    networks: [orclnet]
+    ports:
+      - "1521:1521"          # clients connect HERE
+    volumes:
+      - ./deploy:/deploy:ro  # the in-container deploy script + payload
+
+  # -------------------------------------------------------------------
+  # ORDS - exposes the HR data as REST APIs (Insomnia/Postman target).
+  # It connects to the DB *through the listener host* for realism.
+  # -------------------------------------------------------------------
+  ords:
+    image: container-registry.oracle.com/database/ords:latest
+    container_name: ords
+    hostname: ords
+    networks: [orclnet]
+    environment:
+      # ORDS connects to the DB *through the listener host* (DBHOST=listener).
+      DBHOST: listener
+      DBPORT: "1521"
+      DBSERVICENAME: XEPDB1
+      ORACLE_PWD: ${ORACLE_PASSWORD:-oracle}   # SYS password, used to install ORDS
+    ports:
+      - "8085:8080"          # host 8085 (8080 left free for other apps)
+    volumes:
+      - ./ords/config:/etc/ords/config
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+      listener:
+        condition: service_started

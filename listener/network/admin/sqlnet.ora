@@ -1,0 +1,4 @@
+# sqlnet.ora - client/listener Oracle Net settings for the listener host.
+NAMES.DIRECTORY_PATH = (TNSNAMES, EZCONNECT)
+SQLNET.EXPIRE_TIME = 10
+DIAG_ADR_ENABLED = OFF

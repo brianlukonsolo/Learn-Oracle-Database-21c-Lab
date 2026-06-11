@@ -1,0 +1,24 @@
+# =====================================================================
+# listener.ora  -  The "Solaris listener host" of the lab.
+# ---------------------------------------------------------------------
+# This box runs ONLY an Oracle Net listener. It has NO local database.
+# The database lives in a SEPARATE container (oracle-db) and registers
+# its services here over the network (dynamic / remote registration),
+# exactly like a listener host that is separate from the DB instance.
+#
+#   client  --->  LISTENER (this box, :1521)  --->  oracle-db (XEPDB1)
+#
+# Because we rely on dynamic registration there is intentionally NO
+# SID_LIST here -- the service list is populated at runtime by the
+# database's PMON process. Run `lsnrctl services` to watch it appear.
+# =====================================================================
+LISTENER =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 0.0.0.0)(PORT = 1521))
+      (ADDRESS = (PROTOCOL = IPC)(KEY = EXTPROC1521))
+    )
+  )
+
+# Accept dynamic (remote) registration from the database instance.
+VALID_NODE_CHECKING_REGISTRATION_LISTENER = OFF

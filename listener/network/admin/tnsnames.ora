@@ -1,0 +1,28 @@
+# =====================================================================
+# tnsnames.ora  -  Net service names used FROM the listener host.
+# The deploy script (deploy/deploy.sh) uses these aliases.
+# =====================================================================
+
+# HRDB: the lesson. Connect to the DATABASE *through this listener host*.
+# The listener receives the request and redirects us to the registered
+# database instance (oracle-db). This is the path a real client uses.
+HRDB =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = listener)(PORT = 1521))
+    (CONNECT_DATA = (SERVICE_NAME = XEPDB1))
+  )
+
+# HRDB_DIRECT: bypass the listener host and talk straight to the DB box.
+# Useful to compare behaviour and prove the routing above really works.
+HRDB_DIRECT =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = oracle-db)(PORT = 1521))
+    (CONNECT_DATA = (SERVICE_NAME = XEPDB1))
+  )
+
+# The CDB root service (XE), also reachable through the listener host.
+XE_CDB =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = listener)(PORT = 1521))
+    (CONNECT_DATA = (SERVICE_NAME = XE))
+  )
