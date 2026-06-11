@@ -5,6 +5,11 @@
 ords/config/*
 !ords/config/.gitkeep
 
+# Frontend build artifacts (the dashboard is built inside Docker)
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
 # OS / editor noise
 .DS_Store
 Thumbs.db

@@ -13,10 +13,13 @@ ENV TNS_ADMIN=/opt/oracle/network/admin
 # Net configuration (listener.ora / sqlnet.ora / tnsnames.ora)
 COPY network/admin/ /opt/oracle/network/admin/
 
-# Foreground listener entrypoint
+# Foreground listener entrypoint + the dashboard poller (runs alongside).
 COPY entrypoint.sh /opt/oracle/listener-entrypoint.sh
-RUN chmod +x /opt/oracle/listener-entrypoint.sh \
- && chmod -R a+r /opt/oracle/network/admin
+COPY poller.sh         /opt/poller/poller.sh
+COPY parse_status.awk  /opt/poller/parse_status.awk
+RUN chmod +x /opt/oracle/listener-entrypoint.sh /opt/poller/poller.sh \
+ && chmod -R a+r /opt/oracle/network/admin \
+ && mkdir -p /status && chmod 0777 /status
 
 USER oracle
 

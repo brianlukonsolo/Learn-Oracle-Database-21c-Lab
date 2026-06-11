@@ -21,6 +21,7 @@ the database talk to each other. 🔬
 - [🔌 How the listener talks to the database](#-how-the-listener-talks-to-the-database)
 - [🌱 Deploying sample data](#-deploying-sample-data-the-realism-bit)
 - [🌐 REST APIs (ORDS) + Insomnia/Postman](#-rest-apis-ords--insomniapostman)
+- [📊 Live registration dashboard](#-live-registration-dashboard)
 - [🔗 Connection cheat‑sheet](#-connection-cheat-sheet)
 - [📚 Command reference](#-command-reference)
 - [🧪 Suggested experiments](#-suggested-experiments)
@@ -83,6 +84,13 @@ it has no database of its own. 🤝
 | 🗄️ `oracle-db` | The **database** instance (CDB `XE`, PDB `XEPDB1`, schema `HR`) | `gvenzl/oracle-xe:21-slim-faststart` | `1522→1521` (direct) |
 | 🛰️ `listener` | The **listener host** — runs only `tnslsnr`, *no DB*. The deploy script runs **here**. | built from [`listener/Dockerfile`](listener/Dockerfile) | `1521→1521` |
 | 🌐 `ords` | **Oracle REST Data Services** — exposes `HR` as REST | `container-registry.oracle.com/database/ords:latest` | `8085→8080` |
+| 📊 `dashboard` | **Live registration dashboard** (React) — watch services register/deregister in real time | built from [`frontend/Dockerfile`](frontend/Dockerfile) | `8090→80` |
+
+> 🔎 The dashboard's data comes from a tiny **poller** baked into the `listener`
+> container ([`listener/poller.sh`](listener/poller.sh)). It runs `lsnrctl status`
+> **locally on the listener host** every 3s — because Oracle 21c refuses *remote*
+> `lsnrctl` admin over TCP (`TNS-01189`) — and writes JSON to a shared volume that
+> nginx serves to the React app. Still 100% in‑container. 🐳
 
 ---
 
@@ -139,7 +147,14 @@ docker compose up -d ords
 docker compose logs -f ords             # wait for "ORDS ... Listening on ..."
 docker compose exec listener bash /deploy/enable-rest.sh
 curl http://localhost:8085/ords/hr/employees/
+
+# 6️⃣ (Optional) Start the LIVE dashboard and watch registration happen
+docker compose up -d --build dashboard
+# then open http://localhost:8090
 ```
+
+> 💡 Or just run **`docker compose up -d --build`** to start the whole lab
+> (DB, listener, ORDS, dashboard) in one go.
 
 ---
 
@@ -212,6 +227,40 @@ Both expose a `baseUrl` variable so you can re‑point them in one place.
 
 ---
 
+## 📊 Live registration dashboard
+
+Open **<http://localhost:8090>** 🌐
+
+This is the part you can't see from the command line: a live view of **what the
+listener currently knows**. A poller inside the `listener` container runs
+`lsnrctl status` every 3s and the React app renders it — registered services,
+each instance's status, listener uptime, and a probe that connects to the DB
+**through** the listener to prove the whole path works.
+
+**🪄 The demo that teaches the lesson** — in a second terminal:
+
+```bash
+# Watch the dashboard while you pull the database out from under the listener
+docker compose stop oracle-db      # ➜ services VANISH, listener stays green 🟢
+docker compose start oracle-db     # ➜ PMON re-registers, services REAPPEAR 🤝
+```
+
+The listener never goes down — only its **registrations** come and go. The event
+log on the dashboard timestamps every service that registers or drops off, so you
+can literally watch dynamic registration happen. 🔭
+
+| What you see | Meaning |
+|--------------|---------|
+| 🟢 **listener up** + 0 services | Listener is healthy but no database has registered yet |
+| 🤝 `xepdb1` · `XE` · `READY` | The DB's PMON has registered `XEPDB1` with the listener |
+| 🔴 **DB unreachable** (DB stopped) | The listener has nowhere to redirect clients to |
+| 📜 *“Service xepdb1 dropped off”* | A registration event, captured live |
+
+> The internal 32‑hex‑char CDB GUID service is hidden from the UI to cut noise;
+> the `XE`, `XEPDB1`, `FREE` and `freepdb1` services are the meaningful ones.
+
+---
+
 ## 🔗 Connection cheat‑sheet
 
 **Through the listener host (the lesson) — from your laptop:**
@@ -268,6 +317,16 @@ Admin: `SYS` / `SYSTEM` password is `oracle` (change via `.env`).
 |---------|--------------|
 | `curl http://localhost:8085/ords/hr/employees/` | List employees as JSON |
 | `curl http://localhost:8085/ords/hr/reports/headcount` | Custom report |
+
+### 📊 Live dashboard
+| Command | What it does |
+|---------|--------------|
+| `docker compose up -d --build dashboard` | Build + start the dashboard |
+| open `http://localhost:8090` | The live registration UI |
+| `curl http://localhost:8090/api/status.json` | The raw status JSON the UI polls |
+| `docker compose exec listener cat /status/status.json` | Same JSON, at the source |
+| `docker compose stop oracle-db` | 🎬 Demo: watch services drop off the dashboard |
+| `docker compose start oracle-db` | 🎬 Demo: watch PMON re‑register them |
 
 ---
 

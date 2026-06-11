@@ -19,6 +19,14 @@ echo " Listening   = TCP 0.0.0.0:1521"
 echo " Database    = registers remotely from container 'oracle-db'"
 echo "============================================================"
 
+# Start the dashboard poller in the BACKGROUND (best-effort). It waits
+# for the listener to come up on its own, then writes status JSON to the
+# shared /status volume. If it's absent we still run the listener.
+if [ -x /opt/poller/poller.sh ]; then
+    echo " Dashboard   = poller writing /status/status.json"
+    /opt/poller/poller.sh &
+fi
+
 # tnslsnr run directly (not via lsnrctl) stays in the FOREGROUND, which
 # is exactly what we want for a container's main process.
 exec tnslsnr LISTENER

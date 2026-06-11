@@ -22,6 +22,7 @@ networks:
 
 volumes:
   oracle-data:
+  monitor-status:        # shared: monitor writes status.json, dashboard serves it
 
 services:
   # -------------------------------------------------------------------
@@ -64,8 +65,11 @@ services:
     networks: [orclnet]
     ports:
       - "1521:1521"          # clients connect HERE
+    environment:
+      MONITOR_INTERVAL: "3"  # dashboard poll cadence (seconds)
     volumes:
-      - ./deploy:/deploy:ro  # the in-container deploy script + payload
+      - ./deploy:/deploy:ro       # the in-container deploy script + payload
+      - monitor-status:/status    # poller writes status.json for the dashboard
 
   # -------------------------------------------------------------------
   # ORDS - exposes the HR data as REST APIs (Insomnia/Postman target).
@@ -89,5 +93,30 @@ services:
     depends_on:
       oracle-db:
         condition: service_healthy
+      listener:
+        condition: service_started
+
+  # -------------------------------------------------------------------
+  # DASHBOARD - React UI (built by Vite, served by nginx). It reads the
+  # status JSON straight from the shared volume (written by the poller
+  # that runs INSIDE the listener container) and polls it every ~2.5s.
+  #   ->  http://localhost:8090
+  #
+  # NOTE: the poller lives in the listener container because Oracle 21c
+  # refuses REMOTE `lsnrctl` admin over TCP (TNS-01189). Run locally on
+  # the listener host it's an authenticated call -- and more realistic.
+  # -------------------------------------------------------------------
+  dashboard:
+    build:
+      context: ./frontend
+    image: oracle-listener-lab/dashboard:1
+    container_name: dashboard
+    hostname: dashboard
+    networks: [orclnet]
+    ports:
+      - "8090:80"
+    volumes:
+      - monitor-status:/usr/share/nginx/html/api:ro
+    depends_on:
       listener:
         condition: service_started
