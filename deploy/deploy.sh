@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # =====================================================================
 # deploy.sh  --  THE DEPLOY SCRIPT.
-# Runs INSIDE the listener-host container (never on your laptop).
+# Runs INSIDE the listener-host container (never on the host machine).
 # It connects to the database *through this listener host* (alias HRDB)
 # and loads a batch of "realism" data -- mimicking a production rollout
-# performed from the Solaris box at work.
+# performed from a listener-only host (the "Solaris box").
 #
 # Usage (from your laptop):
 #   docker compose exec listener /deploy/deploy.sh

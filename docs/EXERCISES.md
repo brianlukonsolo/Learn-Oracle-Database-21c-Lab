@@ -113,7 +113,7 @@ remote registration possible.
 
 ```powershell
 # Ask the DB where it registers:
-docker compose exec oracle-db sqlplus -s / as sysdba
+docker compose exec oracle-db sqlplus / as sysdba
 SQL> show parameter remote_listener
 SQL> ALTER SYSTEM REGISTER;
 SQL> exit
@@ -173,7 +173,7 @@ the service missing. This is the subtle one that confuses real on-call DBAs.
 Sabotage — make the database forget to register remotely:
 
 ```powershell
-docker compose exec -i oracle-db sqlplus -s / as sysdba
+docker compose exec oracle-db sqlplus / as sysdba
 SQL> ALTER SYSTEM SET remote_listener='' SCOPE=MEMORY;
 SQL> exit
 docker compose exec listener lsnrctl status     # still shows services... for now
@@ -233,7 +233,7 @@ remote listener, connect through it, then clean up. If you can do this and
 explain each step, you understand dynamic registration. 🏆
 
 ```powershell
-docker compose exec -i oracle-db sqlplus -s / as sysdba
+docker compose exec oracle-db sqlplus / as sysdba
 ```
 ```sql
 ALTER SESSION SET CONTAINER = XEPDB1;
