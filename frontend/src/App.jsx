@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import Docs from "./Docs.jsx";
 
 const POLL_MS = 2500;
 const MAX_LOG = 40;
@@ -85,7 +86,27 @@ function FlowArrow({ label, tone, dashed }) {
 }
 
 // ----------------------------------------------------------------- app
+const VIEWS = ["dashboard", "intro", "exercises", "solutions"];
+const viewFromHash = () =>
+  VIEWS.includes(window.location.hash.slice(1)) ? window.location.hash.slice(1) : "dashboard";
+
 export default function App() {
+  const [view, setViewState] = useState(viewFromHash); // deep-linkable: #exercises, #solutions
+  const [revealed, setRevealed] = useState(false); // solutions gate
+  const setView = (v) => {
+    setViewState(v);
+    window.location.hash = v === "dashboard" ? "" : v;
+  };
+  useEffect(() => {
+    // Only react to view hashes -- in-page anchors inside the rendered
+    // markdown (e.g. #-mission-1-...) must not switch the tab.
+    const onHash = () => {
+      const h = window.location.hash.slice(1);
+      if (h === "" || VIEWS.includes(h)) setViewState(h === "" ? "dashboard" : h);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
   const [data, setData] = useState(null);
   const [fetchOk, setFetchOk] = useState(false);
   const [log, setLog] = useState([]);
@@ -161,8 +182,54 @@ export default function App() {
   const dbTone = dReach ? "ok" : "down";
   const regArrowTone = registered ? "ok" : "down";
 
+  const tabs = [
+    { id: "dashboard", label: "📡 Dashboard" },
+    { id: "intro", label: "📚 Intro" },
+    { id: "exercises", label: "🎓 Exercises" },
+    { id: "solutions", label: "✅ Solutions" },
+  ];
+
   return (
     <div className="page">
+      <nav className="tabs">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            className={`tab ${view === t.id ? "tab-active" : ""}`}
+            onClick={() => setView(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+        {view !== "dashboard" && (
+          <span className="tabs-hint">
+            {fetchOk ? "📡 monitor still polling in the background" : "📡 monitor offline"}
+          </span>
+        )}
+      </nav>
+
+      {view === "intro" && <Docs file="INTRO.md" onNavigate={setView} />}
+
+      {view === "exercises" && <Docs file="EXERCISES.md" onNavigate={setView} />}
+
+      {view === "solutions" &&
+        (revealed ? (
+          <Docs file="SOLUTIONS.md" onNavigate={setView} />
+        ) : (
+          <div className="card gate">
+            <h2>🙈 Hold on — have you really tried?</h2>
+            <p>
+              The answers teach you nothing unless you've wrestled with the
+              missions first. Write your own answers down, <em>then</em> compare.
+            </p>
+            <button className="gate-btn" onClick={() => setRevealed(true)}>
+              I've done the work — show me the solutions
+            </button>
+          </div>
+        ))}
+
+      {view === "dashboard" && (
+        <>
       <header className="hero">
         <h1>🛰️ Listener&nbsp;↔&nbsp;Database — Live Registration</h1>
         <p className="tagline">
@@ -300,10 +367,12 @@ export default function App() {
       </section>
 
       <footer className="foot">
-        Polling <code>api/status.json</code> every {POLL_MS / 1000}s · the JSON is produced by the{" "}
-        <code>monitor</code> container running <code>lsnrctl status</code> against the listener host.
+        Polling <code>api/status.json</code> every {POLL_MS / 1000}s · the JSON is produced by a
+        poller inside the <code>listener</code> container running <code>lsnrctl status</code> locally.
         No scripts run on your laptop. 🐳
       </footer>
+        </>
+      )}
     </div>
   );
 }

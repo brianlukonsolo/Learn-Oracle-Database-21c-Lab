@@ -22,6 +22,8 @@ the database talk to each other. 🔬
 - [🌱 Deploying sample data](#-deploying-sample-data-the-realism-bit)
 - [🌐 REST APIs (ORDS) + Insomnia/Postman](#-rest-apis-ords--insomniapostman)
 - [📊 Live registration dashboard](#-live-registration-dashboard)
+- [📚 Intro: Oracle & listeners from zero](docs/INTRO.md)
+- [🎓 Student workbook (8 missions)](docs/EXERCISES.md) · [✅ answer key](docs/SOLUTIONS.md)
 - [🔗 Connection cheat‑sheet](#-connection-cheat-sheet)
 - [📚 Command reference](#-command-reference)
 - [🧪 Suggested experiments](#-suggested-experiments)
@@ -237,6 +239,20 @@ listener currently knows**. A poller inside the `listener` container runs
 each instance's status, listener uptime, and a probe that connects to the DB
 **through** the listener to prove the whole path works.
 
+The app has four tabs (deep-linkable):
+
+| Tab | URL | What |
+|-----|-----|------|
+| 📡 Dashboard | `http://localhost:8090/` | The live registration view |
+| 📚 Intro | `http://localhost:8090/#intro` | [Oracle & listeners from zero](docs/INTRO.md) — instances, PDBs, registration, TNS |
+| 🎓 Exercises | `http://localhost:8090/#exercises` | The full [student workbook](docs/EXERCISES.md), rendered in-app |
+| ✅ Solutions | `http://localhost:8090/#solutions` | The [answer key](docs/SOLUTIONS.md) — behind an *"have you really tried?"* gate 🙈 |
+
+The tabs read the `.md` files straight from the mounted `docs/` folder, so
+edits to the workbook show up on refresh — no rebuild. Students can sabotage
+the lab in one window and read the mission in the other, with the dashboard
+still polling in the background.
+
 **🪄 The demo that teaches the lesson** — in a second terminal:
 
 ```bash
@@ -332,6 +348,13 @@ Admin: `SYS` / `SYSTEM` password is `oracle` (change via `.env`).
 
 ## 🧪 Suggested experiments
 
+> 🎓 **Studying with this lab?** There's a full **[student workbook](docs/EXERCISES.md)**
+> with 8 graded missions (🟢→🔴), check‑yourself questions, two "crime scene"
+> debugging scenarios (`ORA-12541` vs `ORA-12514`), an error decoder table, and
+> a capstone where you launch your **own** service and watch it register live.
+> The workbook contains **no answers** — they're kept separately in the
+> **[answer key](docs/SOLUTIONS.md)**, which instructors can withhold.
+
 - 🔭 **Watch registration appear:** `down -v`, `up`, then repeatedly run
   `lsnrctl services` on the listener — see `xepdb1` pop in once PMON registers.
 - ✋ **Kill the listener** (`docker compose stop listener`) and try `deploy.sh`
@@ -357,8 +380,33 @@ Admin: `SYS` / `SYSTEM` password is `oracle` (change via `.env`).
 
 ## 🧹 Teardown
 
+**Stop everything, keep your data** (the database survives in its volume):
+
 ```powershell
-docker compose down -v      # removes containers, network and the database volume
+docker compose down
+```
+
+### 💥 Destructive purge — wipe the database volume
+
+> ⚠️ **THIS DELETES YOUR DATA — PERMANENTLY.** The `-v` flag removes the named
+> volumes, including `oracle-data` (every table, every row, the whole HR schema
+> and anything you added) and the dashboard's status volume. There is **no
+> undo** — the next `up` initialises a brand-new, empty database from scratch.
+
+```powershell
+docker compose down -v      # containers + network + ALL volumes 💀
+```
+
+When you *want* this: a corrupted half-initialised database, a sabotage
+exercise gone too far, or simply reclaiming the ~6 GB the lab uses.
+
+**🔄 "I broke it, start me over"** — the lab is disposable by design. Sabotaged
+something in a [workbook mission](docs/EXERCISES.md) and can't fix it? Full
+factory reset (fresh DB, fresh HR data, re-registers from scratch, ~2 min):
+
+```powershell
+docker compose down -v
+docker compose up -d --build
 ```
 
 Happy listening! 🛰️🎧🗄️

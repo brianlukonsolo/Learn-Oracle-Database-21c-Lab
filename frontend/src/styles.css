@@ -117,3 +117,56 @@ body {
 code { background: #eef2f7; padding: 0.1rem 0.35rem; border-radius: 5px; font-size: 0.85em; }
 
 .foot { margin-top: 1.5rem; text-align: center; color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+
+/* ---- tabs ---- */
+.tabs {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.4rem 0 0.2rem; flex-wrap: wrap;
+}
+.tab {
+  border: 1px solid var(--line); background: var(--card); color: var(--muted);
+  padding: 0.45rem 1rem; border-radius: 999px; font-size: 0.92rem;
+  font-weight: 600; cursor: pointer; transition: all 0.15s ease;
+}
+.tab:hover { border-color: var(--blue); color: var(--blue); }
+.tab-active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.tab-active:hover { color: #fff; }
+.tabs-hint { margin-left: auto; color: var(--muted); font-size: 0.8rem; }
+
+/* ---- solutions gate ---- */
+.gate { text-align: center; padding: 2.5rem 1.5rem; }
+.gate h2 { font-size: 1.3rem; }
+.gate p { color: var(--muted); max-width: 480px; margin: 0.6rem auto 1.4rem; line-height: 1.55; }
+.gate-btn {
+  border: none; background: var(--green); color: #fff; font-weight: 700;
+  font-size: 0.95rem; padding: 0.7rem 1.4rem; border-radius: 10px; cursor: pointer;
+}
+.gate-btn:hover { filter: brightness(1.08); }
+
+/* ---- rendered markdown (workbook / solutions) ---- */
+.md { line-height: 1.6; }
+.md h1 { font-size: 1.55rem; margin: 0.2rem 0 0.8rem; }
+.md h2 { font-size: 1.2rem; margin: 1.6rem 0 0.6rem; padding-top: 0.8rem; border-top: 1px solid var(--line); }
+.md h3 { font-size: 1.02rem; margin: 1.2rem 0 0.4rem; }
+.md p, .md li { font-size: 0.93rem; }
+.md ul, .md ol { padding-left: 1.4rem; }
+.md li { margin: 0.25rem 0; }
+.md blockquote {
+  margin: 0.8rem 0; padding: 0.6rem 1rem; border-left: 4px solid var(--blue);
+  background: #f4f8fe; border-radius: 0 8px 8px 0; color: #3b4a5a;
+}
+.md blockquote p { margin: 0.3rem 0; }
+.md pre {
+  background: #101826; color: #dce7f5; padding: 0.85rem 1rem; border-radius: 10px;
+  overflow-x: auto; font-size: 0.83rem; line-height: 1.5;
+}
+.md pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+.md table { border-collapse: collapse; width: 100%; margin: 0.8rem 0; font-size: 0.87rem; }
+.md th, .md td { border: 1px solid var(--line); padding: 0.45rem 0.6rem; text-align: left; }
+.md th { background: #eef2f7; }
+.md tr:nth-child(even) td { background: #fbfdff; }
+.md hr { border: none; border-top: 1px solid var(--line); margin: 1.4rem 0; }
+.md a { color: var(--blue); }
+.md input[type="checkbox"] { margin-right: 0.45rem; }
+.md em { color: #3b4a5a; }
+.md img { max-width: 100%; border: 1px solid var(--line); border-radius: 10px; margin: 0.6rem 0; }

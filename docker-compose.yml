@@ -117,6 +117,7 @@ services:
       - "8090:80"
     volumes:
       - monitor-status:/usr/share/nginx/html/api:ro
+      - ./docs:/usr/share/nginx/html/docs:ro   # workbook + solutions, live-editable
     depends_on:
       listener:
         condition: service_started
