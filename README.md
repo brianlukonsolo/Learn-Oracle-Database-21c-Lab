@@ -16,7 +16,7 @@ it, watch the listener and the database talk to each other. 🔬
 ## 🧭 Table of contents
 - [🏛️ Architecture](#️-architecture)
 - [📦 What's in the box](#-whats-in-the-box)
-- [🗒️ A note on versions (10g vs 21c) and CMAN](#️-a-note-on-versions-10g-vs-21c-and-cman)
+- [🗒️ A note on versions (10g vs 21c) and CMAN](#️-a-note-on-versions-10g-vs-21c-and-cman) · [⚖️ full comparison](docs/VERSIONS.md)
 - [✅ Prerequisites](#-prerequisites)
 - [🚀 Quick start](#-quick-start)
 - [🔌 How the listener talks to the database](#-how-the-listener-talks-to-the-database)
@@ -106,6 +106,7 @@ it has no database of its own. 🤝
   **Oracle Database 21c Express Edition (XE)**, which is free, official‑binary
   based and container‑native. Everything you learn about listeners,
   registration, `lsnrctl`, TNS and ORDS applies identically to 10g/11g/19c.
+  For the full picture, see **[⚖️ 10g vs 21c — a comprehensive comparison](docs/VERSIONS.md)**.
 
 - **Why a *remote listener*, not CMAN?** 🧠 The topology this lab models — a
   listener host wired to a database on a separate instance — is *precisely*
