@@ -2,13 +2,14 @@
 
 A fully‑containerised playground that recreates a classic enterprise topology:
 **an Oracle Net *listener* running on one host, wired to an Oracle *database*
-running on a completely separate host** — exactly like the Solaris listener box
-that fronts a remote database at work. Break it, poke it, watch the listener and
-the database talk to each other. 🔬
+running on a completely separate host** — the pattern found in many real
+estates, e.g. a Solaris box that runs *only* a listener in front of a remote
+database (nicknamed **"the Solaris box"** throughout this lab). Break it, poke
+it, watch the listener and the database talk to each other. 🔬
 
 > 💡 **Everything runs in containers.** There is **no script, no binary, and no
-> Oracle install on your laptop**. The "deploy" you normally run on the Solaris
-> box is run *inside the listener container* — never on the host.
+> Oracle install on the host machine**. Even the data deploy — traditionally a
+> script run on the listener host — runs *inside the listener container*.
 
 ---
 
@@ -105,13 +106,13 @@ it has no database of its own. 🤝
   based and container‑native. Everything you learn about listeners,
   registration, `lsnrctl`, TNS and ORDS applies identically to 10g/11g/19c.
 
-- **Why a *remote listener*, not CMAN?** 🧠 You described "a listener host
-  connected to a database on a separate instance." That is *precisely* Oracle's
-  **remote‑listener registration** pattern, and it's the truest model of your
-  Solaris setup. (Oracle **Connection Manager / CMAN** is a different animal — a
+- **Why a *remote listener*, not CMAN?** 🧠 The topology this lab models — a
+  listener host wired to a database on a separate instance — is *precisely*
+  Oracle's **remote‑listener registration** pattern, so that's what it uses.
+  (Oracle **Connection Manager / CMAN** is a different animal — a
   proxy/firewall — and its binaries aren't shipped with XE; they live behind
-  Oracle's SSO‑gated client download, which would break the "no manual
-  downloads" goal.) The remote‑listener model gives you the real
+  Oracle's SSO‑gated client download, which would break this lab's
+  zero‑manual‑downloads principle.) The remote‑listener model delivers the real
   PMON‑registers‑with‑a‑remote‑listener behaviour for free. 🆓
 
 ---
@@ -119,8 +120,8 @@ it has no database of its own. 🤝
 ## ✅ Prerequisites
 
 - 🐳 Docker Desktop (Compose v2). Check: `docker compose version`
-- 🌐 Internet access to pull three images. All three (`oracle-xe`, `ords`) pull
-  **anonymously** — no Oracle login is normally required.
+- 🌐 Internet access to pull the images (`oracle-xe`, `ords`, `node`, `nginx`).
+  All of them pull **anonymously** — no Oracle login is normally required.
   - 🔑 *If* the ORDS pull ever returns `unauthorized`, do a one‑time free login
     and accept the licence at <https://container-registry.oracle.com>:
     ```powershell
@@ -186,8 +187,9 @@ docker compose exec oracle-db bash -lc "sqlplus -s / as sysdba <<< \"SELECT valu
 
 The baseline **HR** schema (regions → countries → locations → departments →
 jobs → employees) is created automatically on first boot from
-[`db/init`](db/init). To simulate a **production data rollout** the way you do on
-the Solaris box, run the deploy **inside the listener container**:
+[`db/init`](db/init). To simulate a **production data rollout** the way it's
+done on a real listener‑only host, run the deploy **inside the listener
+container**:
 
 ```powershell
 # Loads 20 generated employees THROUGH the listener host (alias HRDB)

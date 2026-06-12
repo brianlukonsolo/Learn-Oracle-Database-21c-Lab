@@ -66,7 +66,7 @@ difference.) The direct `@//oracle-db:1521/...` path succeeds either way.
 **Q2. Why did the direct path still work?**
 The database container runs its **own local listener** (every DB needs one to
 accept TCP connections). The lab's "listener host" is an *additional, remote*
-listener — exactly like the Solaris box at work.
+listener — exactly the role the "Solaris box" plays in this lab's topology.
 
 **Q3. Why force all clients through the listener host?**
 A single well-known address for clients (the DB can move without reconfiguring
